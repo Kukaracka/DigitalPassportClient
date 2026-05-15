@@ -1,16 +1,57 @@
-# React + Vite
+# Электронная сервисная книга "DigitalPassport" — Клиентская часть
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Фронтенд-приложение, построенное на современном стеке (Vite + React) и готовое к развертыванию через Docker.
 
-Currently, two official plugins are available:
+## 🚀 Быстрый старт (Разработка)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Установите зависимости:
+   ```bash
+   npm install
+   ```
+2. Запустите проект локально:
+   ```bash
+   npm run dev
+   ```
 
-## React Compiler
+## 🏗 Развертывание на сервере (Production)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Для запуска используется связка Nginx + Docker. Все конфигурационные файлы уже включены в репозиторий.
 
-## Expanding the ESLint configuration
+### 1. Требования
+* Node.js v20 или выше
+* Docker и Docker Compose
+* Наличие SSL-сертификатов ( Let's Encrypt )
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 2. Подготовка файлов
+Убедитесь, что в корне проекта создана папка `./ssl`, и в ней находятся ваши сертификаты:
+* `fullchain.pem`
+* `key.pem`
+
+*Примечание: папка `ssl` добавлена в `.gitignore` и не попадает в репозиторий в целях безопасности.*
+
+### 3. Сборка и запуск
+Выполните последовательно команды:
+
+```bash
+# Сборка статических файлов
+npm run build
+
+# Запуск контейнера в фоновом режиме
+docker compose up -d --build
+```
+
+## 📁 Структура проекта
+
+* `/src` — исходный код приложения.
+* `/nginx` — конфигурация веб-сервера Nginx (проксирование API, SSL, SPA-routing).
+* `/dist` — директория, содержащая билд проекта для Nginx.
+* `docker-compose.yml` — описание контейнера и проброс портов (80, 443).
+
+## 🛠 Полезные команды
+
+* **Посмотреть логи сервера:**
+  `docker logs -f nginx_serv-nginx-1`
+* **Перезагрузить конфиг Nginx без остановки:**
+  `docker exec nginx_serv-nginx-1 nginx -s reload`
+* **Обновить приложение после git pull:**
+  `npm run build && docker restart nginx_serv-nginx-1`
