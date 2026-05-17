@@ -1,0 +1,43 @@
+name: Build React app & Deploy to server
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build_project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-artifact
+          path: dist/
+
+      - name: Deploy to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{  secrets.SERVER_PRIVATE_KEY  }}
+          port: ${{  secrets.SERVER_PORT  }}
+          target: ${{  secrets.PROJECT_PATH  }}
+          source: "dist/*"
+          rm: true
+          strip_components: 1
+
