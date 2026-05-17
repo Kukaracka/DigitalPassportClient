@@ -33,6 +33,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
+          debug: true
           username: ${{ secrets.SERVER_USER }}
           key: ${{  secrets.SERVER_PRIVATE_KEY  }}
           port: ${{  secrets.SERVER_PORT  }}
