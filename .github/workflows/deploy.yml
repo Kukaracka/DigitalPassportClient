@@ -34,6 +34,12 @@ jobs:
     needs: build_project
 
     steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-artifact
+          path: dist/
+
       - name: Deploy dist artifact to server
         uses: appleboy/scp-action@v0.1.7
         with:
