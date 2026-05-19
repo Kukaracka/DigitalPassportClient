@@ -29,6 +29,10 @@ jobs:
           name: dist-artifact
           path: dist/
 
+  deploy_dist:
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Deploy dist artifact to server
         uses: appleboy/scp-action@v0.1.7
         with:
