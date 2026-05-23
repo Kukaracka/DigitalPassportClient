@@ -23,7 +23,6 @@ const ProductsList = ({
 }) => {
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [viewMode, setViewMode] = useState('grid');
   const [filters, setFilters] = useState({
     category: 'all',
     manufacturer: 'all',
@@ -35,7 +34,6 @@ const ProductsList = ({
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
 
-  // Получаем уникальные категории и производители
   const categories = ['all', ...getCategories()];
   const manufacturers = ['all', ...getManufacturers()];
   const priceStats = getPriceStats();
@@ -117,20 +115,16 @@ const ProductsList = ({
     }
   };
 
-  // Функция для фильтрации продуктов
   const getFilteredProducts = () => {
+    if (!products || products.length === 0) return [];
+    
     return products.filter(product => {
-      // Фильтр по категории
       if (filters.category !== 'all' && product.category !== filters.category) {
         return false;
       }
-
-      // Фильтр по производителю
       if (filters.manufacturer !== 'all' && product.manufacturer !== filters.manufacturer) {
         return false;
       }
-
-      // Фильтр по цене
       const productPrice = product.price || 0;
       if (filters.minPrice && productPrice < Number(filters.minPrice)) {
         return false;
@@ -138,41 +132,34 @@ const ProductsList = ({
       if (filters.maxPrice && productPrice > Number(filters.maxPrice)) {
         return false;
       }
-
-      // Фильтр по дате покупки
       if (product.purchase_date) {
         const purchaseDate = new Date(product.purchase_date);
-        
         if (filters.startDate) {
           const startDate = new Date(filters.startDate);
           if (purchaseDate < startDate) {
             return false;
           }
         }
-        
         if (filters.endDate) {
           const endDate = new Date(filters.endDate);
-          endDate.setHours(23, 59, 59, 999); // Устанавливаем конец дня
+          endDate.setHours(23, 59, 59, 999);
           if (purchaseDate > endDate) {
             return false;
           }
         }
       }
-
       return true;
     });
   };
 
-  // Функция для сортировки продуктов
   const getSortedProducts = (productsToSort) => {
+    if (!productsToSort || productsToSort.length === 0) return [];
+    
     if (sortProducts) {
       return sortProducts(productsToSort, sortBy, sortOrder);
     }
-
-    // Простая сортировка если функция не предоставлена
     return [...productsToSort].sort((a, b) => {
       let aValue, bValue;
-      
       switch (sortBy) {
         case 'price':
           aValue = a.price || 0;
@@ -186,22 +173,19 @@ const ProductsList = ({
           aValue = a.purchase_date ? new Date(a.purchase_date).getTime() : 0;
           bValue = b.purchase_date ? new Date(b.purchase_date).getTime() : 0;
           break;
-        default: // 'created_at'
-          aValue = new Date(a.created_at).getTime();
-          bValue = new Date(b.created_at).getTime();
+        default:
+          aValue = a.created_at ? new Date(a.created_at).getTime() : 0;
+          bValue = b.created_at ? new Date(b.created_at).getTime() : 0;
       }
-      
       return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
     });
   };
 
-  // Получаем отфильтрованные и отсортированные продукты
   const filteredProducts = getFilteredProducts();
   const sortedProducts = getSortedProducts(filteredProducts);
   const productsCount = sortedProducts.length;
-  const totalProducts = products.length;
+  const totalProducts = products?.length || 0;
 
-  // Если открыта детальная информация о продукте
   if (selectedProduct) {
     return (
       <ProductDetail 
@@ -213,7 +197,6 @@ const ProductsList = ({
     );
   }
 
-  // Если открыта форма добавления продукта
   if (isAddingProduct) {
     return (
       <ProductForm
@@ -246,21 +229,6 @@ const ProductsList = ({
       <div className="products-header">
         <h1>Мои продукты ({totalProducts})</h1>
         <div className="products-controls">
-          <div className="view-toggle">
-            <button
-              className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-            >
-              ⏹️ Сетка
-            </button>
-            <button
-              className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-              onClick={() => setViewMode('list')}
-            >
-              📋 Список
-            </button>
-          </div>
-          
           <button
             className="add-product-btn"
             onClick={() => setIsAddingProduct(true)}
@@ -270,7 +238,6 @@ const ProductsList = ({
         </div>
       </div>
 
-      {/* Панель фильтров */}
       <div className="filters-panel">
         <div className="filters-header">
           <h3>🔍 Фильтры и сортировка</h3>
@@ -357,7 +324,6 @@ const ProductsList = ({
           </div>
         </div>
         
-        {/* Сортировка */}
         <div className="sorting-panel">
           <label>Сортировать по:</label>
           <div className="sort-buttons">
@@ -395,7 +361,7 @@ const ProductsList = ({
         )}
       </div>
 
-      {products.length === 0 ? (
+      {totalProducts === 0 ? (
         <div className="empty-products">
           <div className="empty-icon">📦</div>
           <h2>У вас пока нет продуктов</h2>
@@ -417,17 +383,15 @@ const ProductsList = ({
           </button>
         </div>
       ) : (
-        <>
-          <div className={`products-grid ${viewMode === 'list' ? 'list-view' : ''}`}>
-            {sortedProducts.map(product => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onClick={handleProductClick}
-              />
-            ))}
-          </div>
-        </>
+        <div className="products-grid">
+          {sortedProducts.map(product => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onClick={handleProductClick}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

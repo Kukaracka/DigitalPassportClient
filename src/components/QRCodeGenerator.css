@@ -1,0 +1,255 @@
+.qr-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.qr-modal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 550px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.qr-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.qr-modal-header h3 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.3rem;
+}
+
+.qr-close-btn {
+  background: #ff4757;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.qr-close-btn:hover {
+  transform: rotate(90deg);
+  background: #ff3742;
+}
+
+.product-info-summary {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea10, #764ba210);
+  border-radius: 12px;
+}
+
+.product-name-summary {
+  font-size: 18px;
+  font-weight: bold;
+  color: #2d3748;
+  margin-bottom: 6px;
+}
+
+.product-details-summary {
+  font-size: 14px;
+  color: #718096;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.qr-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.qr-action-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.download-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.download-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.download-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.print-btn {
+  background: #4a5568;
+  color: white;
+}
+
+.print-btn:hover {
+  background: #2d3748;
+  transform: translateY(-2px);
+}
+
+.copy-btn {
+  background: #38a169;
+  color: white;
+}
+
+.copy-btn:hover {
+  background: #2f855a;
+  transform: translateY(-2px);
+}
+
+.qr-note {
+  text-align: center;
+  padding: 12px;
+  background: #fef3c7;
+  border-radius: 8px;
+  color: #92400e;
+}
+
+@media (max-width: 768px) {
+  .qr-modal-content {
+    padding: 16px;
+  }
+  
+  .qr-actions {
+    flex-direction: column;
+  }
+  
+  .qr-action-btn {
+    min-width: auto;
+  }
+}
+
+[data-theme="dark"] .qr-modal-content {
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] .qr-modal-header h3 {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .qr-modal-header {
+  border-bottom-color: #2d3748;
+}
+
+[data-theme="dark"] .qr-code-container {
+  background: #2d3748;
+}
+
+[data-theme="dark"] .product-info-summary {
+  background: linear-gradient(135deg, #667eea20, #764ba220);
+}
+
+[data-theme="dark"] .product-name-summary {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .product-details-summary {
+  color: #a0aec0;
+}
+
+[data-theme="dark"] .qr-note {
+  background: #2d3748;
+  color: #a0aec0;
+}
+
+/* Добавьте в конец файла */
+.qr-guest-note {
+  background: linear-gradient(135deg, #667eea10, #764ba210);
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.qr-link {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.qr-link-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 12px;
+  background: #f8fafc;
+  font-family: monospace;
+}
+
+.qr-copy-link-btn {
+  padding: 8px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.qr-copy-link-btn:hover {
+  background: #764ba2;
+  transform: translateY(-1px);
+}
+
+.qr-generating {
+  text-align: center;
+  padding: 40px;
+}
+
+.qr-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}

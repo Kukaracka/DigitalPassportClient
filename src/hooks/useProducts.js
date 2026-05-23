@@ -148,6 +148,45 @@ export const useProducts = () => {
     }
   };
 
+  const generateShareToken = async (productId) => {
+    try {
+      // Пытаемся получить токен с бэкенда
+      // Когда бэкенд будет готов, раскомментировать:
+      // const response = await ProductAPI.generateShareToken(productId);
+      // return response;
+      
+      // Временное решение для демонстрации (удалить когда бэкенд будет готов)
+      console.log('Generating share token for product:', productId);
+      const existingToken = localStorage.getItem(`share_token_${productId}`);
+      if (existingToken) {
+        return { share_token: existingToken };
+      }
+      const tempToken = btoa(`product_${productId}_${Date.now()}_${Math.random()}`);
+      localStorage.setItem(`share_token_${productId}`, tempToken);
+      return { share_token: tempToken };
+    } catch (error) {
+      console.error('Error generating share token:', error);
+      throw error;
+    }
+  };
+
+  const getProductByShareToken = async (token) => {
+    try {
+      // Когда бэкенд будет готов, раскомментировать:
+      // const response = await ProductAPI.getProductByShareToken(token);
+      // return response;
+      
+      // Временное решение для демонстрации
+      console.log('Getting product by share token:', token);
+      const productId = parseInt(atob(token).split('_')[1]);
+      const product = products.find(p => p.id === productId);
+      return product || null;
+    } catch (error) {
+      console.error('Error getting product by token:', error);
+      throw error;
+    }
+  };
+
   const getProductsByCategory = (category) => {
     if (!category || category === 'all') return products;
     return products.filter(product => product.category === category);
@@ -249,6 +288,8 @@ export const useProducts = () => {
     deleteProductImage,
     setMainProductImage,
     getImageSummary,
+    generateShareToken,
+    getProductByShareToken,
     getProductsByCategory,
     getProductsByPriceRange,
     getProductsByDateRange,

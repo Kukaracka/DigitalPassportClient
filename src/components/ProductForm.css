@@ -322,3 +322,17 @@
     font-size: 12px;
   }
 }
+
+.draft-badge {
+  font-size: 12px;
+  background: #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 20px;
+  color: #4a5568;
+  margin-left: 10px;
+}
+
+[data-theme="dark"] .draft-badge {
+  background: #2d3748;
+  color: #a0aec0;
+}

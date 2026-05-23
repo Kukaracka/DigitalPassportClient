@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import EditProfile from './EditProfile';
-import AvatarUploader from './AvatarUploader';
 import './Profile.css';
 
 const Profile = ({ user, onBack, onUpdateUser, onAvatarUpload }) => {
@@ -90,7 +89,6 @@ const Profile = ({ user, onBack, onUpdateUser, onAvatarUpload }) => {
                 </div>
               )}
               
-              {/* Затемнение и кнопка при наведении */}
               {showUploadOverlay && !isUploadingAvatar && (
                 <div className="avatar-overlay" onClick={handleFileSelect}>
                   <span className="avatar-overlay-icon">📷</span>
@@ -98,7 +96,6 @@ const Profile = ({ user, onBack, onUpdateUser, onAvatarUpload }) => {
                 </div>
               )}
               
-              {/* Индикатор загрузки */}
               {isUploadingAvatar && (
                 <div className="avatar-overlay uploading">
                   <div className="avatar-spinner-small"></div>
@@ -107,7 +104,6 @@ const Profile = ({ user, onBack, onUpdateUser, onAvatarUpload }) => {
               )}
             </div>
             
-            {/* Скрытый input для выбора файла */}
             <input
               id="avatar-file-input"
               type="file"

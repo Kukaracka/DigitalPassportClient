@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ProductForm from './ProductForm';
 import ProductImageGallery from './ProductImageGallery';
 import LoadingSpinner from './LoadingSpinner';
+import QRCodeGenerator from './QRCodeGenerator';
 import { useProducts } from '../hooks/useProducts';
 import './ProductDetail.css';
 
@@ -10,16 +11,21 @@ const ProductDetail = ({ product, onEdit, onDelete, onClose }) => {
   const [productData, setProductData] = useState(product);
   const [productImages, setProductImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const [shareToken, setShareToken] = useState(null);
+  const [generatingToken, setGeneratingToken] = useState(false);
   
   const { 
     getProductWithImages, 
     uploadProductImage, 
     deleteProductImage, 
-    setMainProductImage 
+    setMainProductImage,
+    generateShareToken 
   } = useProducts();
 
   useEffect(() => {
     loadProductWithImages();
+    loadShareToken();
   }, [product.id]);
 
   const loadProductWithImages = async () => {
@@ -29,12 +35,26 @@ const ProductDetail = ({ product, onEdit, onDelete, onClose }) => {
       if (data) {
         setProductData(data);
         setProductImages(data.images || []);
+        if (data.share_token) {
+          setShareToken(data.share_token);
+        }
       }
     } catch (error) {
       console.error('Error loading product with images:', error);
       setProductData(product);
     } finally {
       setLoadingImages(false);
+    }
+  };
+
+  const loadShareToken = async () => {
+    try {
+      const token = await generateShareToken(product.id);
+      if (token && token.share_token) {
+        setShareToken(token.share_token);
+      }
+    } catch (error) {
+      console.log('No existing share token or error loading:', error);
     }
   };
 
@@ -113,6 +133,26 @@ const ProductDetail = ({ product, onEdit, onDelete, onClose }) => {
   const handleDelete = () => {
     if (window.confirm('Вы уверены, что хотите удалить этот продукт?')) {
       onDelete(product.id);
+    }
+  };
+
+  const handleGenerateQR = async () => {
+    setGeneratingToken(true);
+    try {
+      let token = shareToken;
+      if (!token) {
+        const result = await generateShareToken(product.id);
+        token = result.share_token;
+        setShareToken(token);
+      }
+      setShowQR(true);
+    } catch (error) {
+      console.error('Error generating share token:', error);
+      const tempToken = btoa(`product_${product.id}_${Date.now()}`);
+      setShareToken(tempToken);
+      setShowQR(true);
+    } finally {
+      setGeneratingToken(false);
     }
   };
 
@@ -232,6 +272,13 @@ const ProductDetail = ({ product, onEdit, onDelete, onClose }) => {
           <button className="delete-btn-large" onClick={handleDelete}>
             🗑️ Удалить
           </button>
+          <button 
+            className="qr-btn-large" 
+            onClick={handleGenerateQR}
+            disabled={generatingToken}
+          >
+            {generatingToken ? '⏳ Создание ссылки...' : '📱 QR-код'}
+          </button>
         </div>
 
         <ProductImageGallery
@@ -243,6 +290,15 @@ const ProductDetail = ({ product, onEdit, onDelete, onClose }) => {
           loading={loadingImages}
         />
       </div>
+
+      {showQR && (
+        <QRCodeGenerator
+          product={productData}
+          shareToken={shareToken}
+          onClose={() => setShowQR(false)}
+          isGenerating={false}
+        />
+      )}
     </div>
   );
 };

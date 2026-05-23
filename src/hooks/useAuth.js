@@ -24,7 +24,6 @@ export const useAuth = () => {
       setIsAuthenticated(false);
       setUser(null);
     } finally {
-      // Минимальная задержка для плавности
       setTimeout(() => {
         setLoading(false);
       }, 300);
@@ -122,6 +121,9 @@ export const useAuth = () => {
     setIsAuthenticated(false);
     setUser(null);
     setError(null);
+    // Очищаем сохранённый маршрут
+    sessionStorage.removeItem('lastRoute');
+    localStorage.removeItem('lastRoute');
     document.cookie = 'my_access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   };
 

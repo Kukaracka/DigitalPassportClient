@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFormDraft } from '../hooks/useFormDraft';
 import './ProductForm.css';
 
 const ProductForm = ({ product, onSubmit, onCancel, isEditing = false }) => {
@@ -16,6 +17,8 @@ const ProductForm = ({ product, onSubmit, onCancel, isEditing = false }) => {
   });
 
   const [errors, setErrors] = useState({});
+  
+  const { loadDraft, saveDraft, clearDraft, hasDraft } = useFormDraft(product?.id);
 
   useEffect(() => {
     if (product) {
@@ -31,8 +34,24 @@ const ProductForm = ({ product, onSubmit, onCancel, isEditing = false }) => {
         description: product.description || '',
         notes: product.notes || ''
       });
+    } else {
+      const draft = loadDraft();
+      if (draft && draft.data) {
+        const shouldRestore = window.confirm('Найден несохранённый черновик. Восстановить?');
+        if (shouldRestore) {
+          setFormData(draft.data);
+        } else {
+          clearDraft();
+        }
+      }
     }
   }, [product]);
+
+  useEffect(() => {
+    if (!product && (formData.name || formData.category || formData.manufacturer)) {
+      saveDraft(formData);
+    }
+  }, [formData, product]);
 
   const categories = [
     'Ноутбук', 'Смартфон', 'Планшет', 'Наушники',
@@ -111,6 +130,10 @@ const ProductForm = ({ product, onSubmit, onCancel, isEditing = false }) => {
       };
       
       onSubmit(productData);
+      
+      if (!product) {
+        clearDraft();
+      }
     }
   };
 
@@ -118,6 +141,9 @@ const ProductForm = ({ product, onSubmit, onCancel, isEditing = false }) => {
     <div className="product-form-container">
       <div className="product-form-header">
         <h1>{isEditing ? 'Редактирование продукта' : 'Добавление нового продукта'}</h1>
+        {!product && hasDraft && (
+          <span className="draft-badge">💾 Черновик сохранён</span>
+        )}
         <button className="cancel-btn" onClick={onCancel}>
           ✖
         </button>
