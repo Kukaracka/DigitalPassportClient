@@ -228,3 +228,158 @@
 .settings-info {
   display: none;
 }
+
+/* Добавьте в конец файла Settings.css */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 450px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2d3748;
+}
+
+.modal-close {
+  background: #ff4757;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.modal-content .form-group {
+  margin-bottom: 16px;
+}
+
+.modal-content .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.modal-content .form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.modal-content .form-group small {
+  display: block;
+  margin-top: 4px;
+  color: #718096;
+  font-size: 12px;
+}
+
+.warning-text {
+  background: #fef3c7;
+  padding: 12px;
+  border-radius: 8px;
+  color: #92400e;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modal-buttons button:first-child {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.modal-buttons button:last-child {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.modal-buttons button.delete-btn {
+  background: #ff4757;
+}
+
+.modal-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: #ff4757;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+[data-theme="dark"] .modal-content {
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] .modal-header h3 {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom-color: #2d3748;
+}
+
+[data-theme="dark"] .modal-content .form-group label {
+  color: #a0aec0;
+}
+
+[data-theme="dark"] .modal-content .form-group input {
+  background: #2d3748;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .warning-text {
+  background: #2d3748;
+  color: #a0aec0;
+}

@@ -4,19 +4,7 @@ import './QRCodeGenerator.css';
 const QRCodeGenerator = ({ product, shareToken, onClose, isGenerating }) => {
   const [qrSize] = useState(256);
   
-  // Сохраняем токен в localStorage для демо-режима
-  React.useEffect(() => {
-    if (shareToken && product) {
-      const allTokens = JSON.parse(localStorage.getItem('share_tokens') || '{}');
-      allTokens[shareToken] = product;
-      localStorage.setItem('share_tokens', JSON.stringify(allTokens));
-    }
-  }, [shareToken, product]);
-  
-  // Ссылка на гостевую страницу
   const guestUrl = `${window.location.origin}/shared-product/${shareToken}`;
-  
-  // URL для генерации QR-кода через API
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(guestUrl)}`;
   
   const downloadQR = () => {
@@ -181,7 +169,7 @@ const QRCodeGenerator = ({ product, shareToken, onClose, isGenerating }) => {
         </div>
         
         <div className="qr-note">
-          <small>ℹ️ Ссылка действительна постоянно. Вы можете отозвать доступ в любой момент в настройках продукта.</small>
+          <small>ℹ️ Ссылка действительна постоянно. При удалении продукта доступ по ссылке будет прекращён.</small>
         </div>
       </div>
     </div>

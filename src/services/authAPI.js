@@ -50,7 +50,7 @@ class AuthAPI {
     try {
       const response = await api.get('/users/me');
       console.log('📥 User data from server:', response.data);
-      return response.data; // Бэкенд уже возвращает avatar_url!
+      return response.data;
     } catch (error) {
       console.log('⚠️ /users/me failed, trying /users/');
       const response = await api.get('/users/');
@@ -79,7 +79,6 @@ class AuthAPI {
     }
   }
 
-  // Загрузка аватарки через API (новый эндпоинт)
   async uploadAvatar(file) {
     try {
       console.log('📤 Uploading avatar:', file.name);
@@ -101,6 +100,29 @@ class AuthAPI {
     }
   }
 
+  async changePassword(oldPassword, newPassword) {
+    try {
+      const response = await api.put('/users/me/password', {
+        old_password: oldPassword,
+        new_password: newPassword
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async deleteAccount(password) {
+    try {
+      const response = await api.delete('/users/me', {
+        data: { password: password }
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   handleError(error) {
     if (error.response?.data?.detail) {
       return new Error(error.response.data.detail);
@@ -112,10 +134,7 @@ class AuthAPI {
       return new Error('Пользователь уже существует');
     }
     if (error.response?.status === 400) {
-      return new Error(error.response.data.detail || 'Ошибка загрузки файла');
-    }
-    if (error.response?.status === 413) {
-      return new Error('Файл слишком большой (макс. 5MB)');
+      return new Error(error.response.data.detail || 'Ошибка');
     }
     if (error.request) {
       return new Error('Нет подключения к серверу');

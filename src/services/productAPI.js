@@ -80,6 +80,24 @@ class ProductAPI {
     }
   }
 
+  async generateShareToken(productId) {
+    try {
+      const response = await api.post(`/products/${productId}/share-token`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getProductByShareToken(token) {
+    try {
+      const response = await api.get(`/products/shared/${token}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   handleError(error) {
     if (error.response?.data?.detail) {
       return new Error(error.response.data.detail);

@@ -117,13 +117,42 @@ export const useAuth = () => {
     }
   };
 
+  const changePassword = async (oldPassword, newPassword) => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const result = await AuthAPI.changePassword(oldPassword, newPassword);
+      return result;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteAccount = async (password) => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const result = await AuthAPI.deleteAccount(password);
+      await logout();
+      return result;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setIsAuthenticated(false);
     setUser(null);
     setError(null);
-    // Очищаем сохранённый маршрут
-    sessionStorage.removeItem('lastRoute');
-    localStorage.removeItem('lastRoute');
+    localStorage.removeItem('lastView');
     document.cookie = 'my_access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   };
 
@@ -140,6 +169,8 @@ export const useAuth = () => {
     register,
     updateUser,
     uploadAvatar,
+    changePassword,
+    deleteAccount,
     logout,
     checkAuth,
     clearError

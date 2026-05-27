@@ -1,35 +1,44 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import LoadingSpinner from './LoadingSpinner';
+import { useProducts } from '../hooks/useProducts';
 import './SharedProductPage.css';
 
 const SharedProductPage = () => {
+  const { token } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+  const [error, setError] = useState(null);
+  const { getProductByShareToken } = useProducts();
+
   useEffect(() => {
-    // Просто показываем демо-данные
-    setTimeout(() => {
-      setProduct({
-        id: 999,
-        name: "Демо продукт",
-        manufacturer: "Apple",
-        model: "MacBook Pro",
-        serial_number: "SN-DEMO-123",
-        price: 150000,
-        purchase_date: "2024-01-15",
-        warranty_until: "2026-01-15",
-        description: "Это демонстрационный продукт. В реальном приложении здесь будут данные из базы данных.",
-        category: "Ноутбук"
-      });
+    loadProduct();
+  }, [token]);
+
+  const loadProduct = async () => {
+    setLoading(true);
+    try {
+      const data = await getProductByShareToken(token);
+      setProduct(data);
+      setError(null);
+    } catch (error) {
+      console.error('Error loading shared product:', error);
+      setError('Продукт не найден или ссылка недействительна');
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
-  
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'Не указано';
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU');
+    return date.toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
-  
+
   const getCategoryIcon = (category) => {
     const icons = {
       'Ноутбук': '💻',
@@ -43,17 +52,40 @@ const SharedProductPage = () => {
     };
     return icons[category] || '📦';
   };
-  
+
   if (loading) {
+    return <LoadingSpinner message="Загрузка информации о продукте..." />;
+  }
+
+  if (error) {
     return (
-      <div className="shared-product-page">
-        <div className="shared-product-container" style={{ textAlign: 'center', padding: '50px' }}>
-          Загрузка...
+      <div className="shared-product-error">
+        <div className="error-container">
+          <div className="error-icon">🔒</div>
+          <h2>Доступ ограничен</h2>
+          <p>{error}</p>
+          <button onClick={() => window.location.href = '/'}>
+            Вернуться на главную
+          </button>
         </div>
       </div>
     );
   }
-  
+
+  if (!product) {
+    return (
+      <div className="shared-product-error">
+        <div className="error-container">
+          <div className="error-icon">❓</div>
+          <h2>Продукт не найден</h2>
+          <button onClick={() => window.location.href = '/'}>
+            Вернуться на главную
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="shared-product-page">
       <div className="shared-product-container">
