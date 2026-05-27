@@ -336,3 +336,101 @@
   background: #2d3748;
   color: #a0aec0;
 }
+
+/* Исправления для мобильных устройств - страница формы продукта */
+@media (max-width: 768px) {
+  .product-form-container {
+    padding: 0;
+    min-height: 100vh;
+    justify-content: flex-start;
+  }
+  
+  .product-form-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding: 12px 15px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .product-form-header h1 {
+    font-size: 16px;
+    text-align: left;
+    order: 0;
+  }
+  
+  .cancel-btn {
+    position: static;
+    width: 36px;
+    height: 36px;
+    margin-left: auto;
+  }
+  
+  .product-form {
+    padding: 15px;
+    max-height: none;
+    overflow-y: visible;
+    border-radius: 0;
+  }
+  
+  .form-actions {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 15px;
+    margin-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .submit-btn,
+  .cancel-form-btn {
+    width: 50%;
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-form-header {
+    padding: 10px 12px;
+  }
+  
+  .product-form-header h1 {
+    font-size: 15px;
+  }
+  
+  .cancel-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .product-form {
+    padding: 12px;
+  }
+  
+  .form-actions {
+    padding: 12px;
+  }
+  
+  .submit-btn,
+  .cancel-form-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+/* Тёмная тема для sticky элементов */
+[data-theme="dark"] .product-form-header {
+  background: #1e1e2e;
+  border-bottom: 1px solid #2d3748;
+}
+
+[data-theme="dark"] .form-actions {
+  background: #1e1e2e;
+  border-top: 1px solid #2d3748;
+}

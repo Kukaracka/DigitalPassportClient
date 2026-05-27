@@ -64,3 +64,46 @@ body {
   backface-visibility: hidden;
   perspective: 1000;
 }
+
+/* Глобальные исправления для мобильных устройств */
+@media (max-width: 768px) {
+  .App {
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
+  /* Увеличиваем область нажатия для кнопок */
+  button, 
+  .clickable-card,
+  .back-button,
+  .logout-button,
+  .action-button,
+  .add-product-btn,
+  .submit-btn,
+  .cancel-form-btn,
+  .edit-btn-large,
+  .delete-btn-large,
+  .qr-btn-large,
+  .settings-action-btn,
+  .theme-btn,
+  .lang-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Улучшаем скролл */
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Убираем ненужные скроллы */
+  .product-detail,
+  .product-form-container,
+  .dashboard,
+  .profile,
+  .products-container,
+  .settings-page {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
