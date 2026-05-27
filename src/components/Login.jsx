@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import './Auth.css';
 
-const Login = ({ onSwitchToRegister, onLogin, error }) => {
+const Login = ({ onSwitchToRegister, onLogin, error, clearError }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    if (localError) setLocalError('');
+    if (clearError) clearError();
   };
 
   const togglePasswordVisibility = () => {
@@ -23,14 +26,18 @@ const Login = ({ onSwitchToRegister, onLogin, error }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setLocalError('');
     
     try {
       await onLogin(formData);
-    } catch (error) {
+    } catch (err) {
+      setLocalError(err.message || 'Ошибка входа');
     } finally {
       setLoading(false);
     }
   };
+
+  const displayError = error || localError;
 
   const EyeIcon = () => (
     <svg 
@@ -60,9 +67,9 @@ const Login = ({ onSwitchToRegister, onLogin, error }) => {
         <div className="auth-content">
           <h2>Вход в DigitalPassport</h2>
           
-          {error && (
+          {displayError && (
             <div className="form-error">
-              {error}
+              {displayError}
             </div>
           )}
           

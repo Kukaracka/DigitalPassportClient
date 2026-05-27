@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Auth.css';
 
-const Register = ({ onSwitchToLogin, onRegister, error }) => {
+const Register = ({ onSwitchToLogin, onRegister, error, clearError }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -15,6 +15,7 @@ const Register = ({ onSwitchToLogin, onRegister, error }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -22,6 +23,8 @@ const Register = ({ onSwitchToLogin, onRegister, error }) => {
       [e.target.name]: e.target.value
     });
     if (validationError) setValidationError('');
+    if (localError) setLocalError('');
+    if (clearError) clearError();
   };
 
   const togglePasswordVisibility = () => {
@@ -60,14 +63,19 @@ const Register = ({ onSwitchToLogin, onRegister, error }) => {
     }
 
     setLoading(true);
+    setValidationError('');
+    setLocalError('');
     
     try {
       await onRegister(formData);
-    } catch (error) {
+    } catch (err) {
+      setLocalError(err.message || 'Ошибка регистрации');
     } finally {
       setLoading(false);
     }
   };
+
+  const displayError = error || validationError || localError;
 
   const EyeIcon = ({ isVisible }) => (
     <svg 
@@ -97,9 +105,9 @@ const Register = ({ onSwitchToLogin, onRegister, error }) => {
         <div className="auth-content">
           <h2>Регистрация в DigitalPassport</h2>
           
-          {(error || validationError) && (
+          {displayError && (
             <div className="form-error">
-              {error || validationError}
+              {displayError}
             </div>
           )}
           

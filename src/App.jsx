@@ -40,8 +40,11 @@ function App() {
     if (!authLoading && isAuthenticated && !hasCheckedRef.current) {
       hasCheckedRef.current = true;
       const savedView = localStorage.getItem('lastView');
-      if (savedView && savedView !== currentView && savedView !== 'login' && savedView !== 'register') {
+      // Перенаправляем на дашборд, если нет сохранённого маршрута
+      if (savedView && savedView !== 'login' && savedView !== 'register') {
         navigate(savedView);
+      } else {
+        navigate('dashboard');
       }
     }
   }, [isAuthenticated, authLoading, currentView, navigate]);
@@ -50,6 +53,8 @@ function App() {
     setTransitionLoading(true);
     try {
       await login(credentials);
+      // После успешного входа перенаправляем на дашборд
+      navigate('dashboard');
     } catch (error) {
       console.error('Login error:', error);
     } finally {
@@ -109,23 +114,19 @@ function App() {
   if (!isAuthenticated) {
     return (
       <div className="App">
-        {error && (
-          <div className="error-message">
-            {error}
-            <button onClick={clearError}>×</button>
-          </div>
-        )}
         {currentView === 'login' ? (
           <Login 
             onSwitchToRegister={() => navigate('register')}
             onLogin={handleLogin}
             error={error}
+            clearError={clearError}
           />
         ) : (
           <Register 
             onSwitchToLogin={() => navigate('login')}
             onRegister={handleRegister}
             error={error}
+            clearError={clearError}
           />
         )}
       </div>
@@ -134,13 +135,6 @@ function App() {
 
   return (
     <div className="App">
-      {error && (
-        <div className="error-message">
-          {error}
-          <button onClick={clearError}>×</button>
-        </div>
-      )}
-      
       {currentView === 'dashboard' && (
         <Dashboard 
           user={user} 
