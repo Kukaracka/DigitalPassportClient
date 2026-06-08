@@ -1,7 +1,7 @@
 PROJECT EXPORT REPORT
 ===========================================
 Path: c:\DigitalPassportClient
-Date: 5/23/2026, 6:35:00 PM
+Date: 5/27/2026, 9:03:11 PM
 ===========================================
 
 ######### File: .github\workflows\deploy.yml #########
@@ -114,19 +114,23 @@ export default defineConfig([
 
 ######### File: index.html #########
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <meta name="theme-color" content="#667eea" />
+    <title>DigitalPassport</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-
 
 ######### File: nginx\nginx.conf #########
 events {}
@@ -436,6 +440,49 @@ body {
   perspective: 1000;
 }
 
+/* Глобальные исправления для мобильных устройств */
+@media (max-width: 768px) {
+  .App {
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
+  /* Увеличиваем область нажатия для кнопок */
+  button, 
+  .clickable-card,
+  .back-button,
+  .logout-button,
+  .action-button,
+  .add-product-btn,
+  .submit-btn,
+  .cancel-form-btn,
+  .edit-btn-large,
+  .delete-btn-large,
+  .qr-btn-large,
+  .settings-action-btn,
+  .theme-btn,
+  .lang-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Улучшаем скролл */
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Убираем ненужные скроллы */
+  .product-detail,
+  .product-form-container,
+  .dashboard,
+  .profile,
+  .products-container,
+  .settings-page {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 ######### File: src\App.jsx #########
 import React, { useState, useEffect, useRef } from 'react';
 import Login from './components/Login';
@@ -479,8 +526,11 @@ function App() {
     if (!authLoading && isAuthenticated && !hasCheckedRef.current) {
       hasCheckedRef.current = true;
       const savedView = localStorage.getItem('lastView');
-      if (savedView && savedView !== currentView && savedView !== 'login' && savedView !== 'register') {
+      // Перенаправляем на дашборд, если нет сохранённого маршрута
+      if (savedView && savedView !== 'login' && savedView !== 'register') {
         navigate(savedView);
+      } else {
+        navigate('dashboard');
       }
     }
   }, [isAuthenticated, authLoading, currentView, navigate]);
@@ -489,6 +539,8 @@ function App() {
     setTransitionLoading(true);
     try {
       await login(credentials);
+      // После успешного входа перенаправляем на дашборд
+      navigate('dashboard');
     } catch (error) {
       console.error('Login error:', error);
     } finally {
@@ -548,23 +600,19 @@ function App() {
   if (!isAuthenticated) {
     return (
       <div className="App">
-        {error && (
-          <div className="error-message">
-            {error}
-            <button onClick={clearError}>×</button>
-          </div>
-        )}
         {currentView === 'login' ? (
           <Login 
             onSwitchToRegister={() => navigate('register')}
             onLogin={handleLogin}
             error={error}
+            clearError={clearError}
           />
         ) : (
           <Register 
             onSwitchToLogin={() => navigate('login')}
             onRegister={handleRegister}
             error={error}
+            clearError={clearError}
           />
         )}
       </div>
@@ -573,13 +621,6 @@ function App() {
 
   return (
     <div className="App">
-      {error && (
-        <div className="error-message">
-          {error}
-          <button onClick={clearError}>×</button>
-        </div>
-      )}
-      
       {currentView === 'dashboard' && (
         <Dashboard 
           user={user} 
@@ -2096,19 +2137,22 @@ export default LoadingSpinner;
 import React, { useState } from 'react';
 import './Auth.css';
 
-const Login = ({ onSwitchToRegister, onLogin, error }) => {
+const Login = ({ onSwitchToRegister, onLogin, error, clearError }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    if (localError) setLocalError('');
+    if (clearError) clearError();
   };
 
   const togglePasswordVisibility = () => {
@@ -2118,14 +2162,18 @@ const Login = ({ onSwitchToRegister, onLogin, error }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setLocalError('');
     
     try {
       await onLogin(formData);
-    } catch (error) {
+    } catch (err) {
+      setLocalError(err.message || 'Ошибка входа');
     } finally {
       setLoading(false);
     }
   };
+
+  const displayError = error || localError;
 
   const EyeIcon = () => (
     <svg 
@@ -2155,9 +2203,9 @@ const Login = ({ onSwitchToRegister, onLogin, error }) => {
         <div className="auth-content">
           <h2>Вход в DigitalPassport</h2>
           
-          {error && (
+          {displayError && (
             <div className="form-error">
-              {error}
+              {displayError}
             </div>
           )}
           
@@ -2890,6 +2938,58 @@ export default ProductCard;
   }
 }
 
+/* Исправления для мобильных устройств - детальная страница продукта */
+@media (max-width: 768px) {
+  .product-detail {
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+  
+  .product-detail-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding: 10px 15px;
+  }
+  
+  .product-detail-content {
+    padding: 15px;
+    padding-bottom: 30px;
+  }
+  
+  .product-action-buttons {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 12px;
+    margin-bottom: 0;
+    margin-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    gap: 10px;
+  }
+  
+  .edit-btn-large,
+  .delete-btn-large,
+  .qr-btn-large {
+    padding: 10px;
+    font-size: 14px;
+    min-width: auto;
+  }
+}
+
+[data-theme="dark"] .product-detail-header {
+  background: #1e1e2e;
+  border-bottom: 1px solid #2d3748;
+}
+
+[data-theme="dark"] .product-action-buttons {
+  background: #1e1e2e;
+  border-top: 1px solid #2d3748;
+}
+
 ######### File: src\components\ProductDetail.jsx #########
 import React, { useState, useEffect } from 'react';
 import ProductForm from './ProductForm';
@@ -3536,6 +3636,104 @@ export default ProductDetail;
 [data-theme="dark"] .draft-badge {
   background: #2d3748;
   color: #a0aec0;
+}
+
+/* Исправления для мобильных устройств - страница формы продукта */
+@media (max-width: 768px) {
+  .product-form-container {
+    padding: 0;
+    min-height: 100vh;
+    justify-content: flex-start;
+  }
+  
+  .product-form-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding: 12px 15px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .product-form-header h1 {
+    font-size: 16px;
+    text-align: left;
+    order: 0;
+  }
+  
+  .cancel-btn {
+    position: static;
+    width: 36px;
+    height: 36px;
+    margin-left: auto;
+  }
+  
+  .product-form {
+    padding: 15px;
+    max-height: none;
+    overflow-y: visible;
+    border-radius: 0;
+  }
+  
+  .form-actions {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 15px;
+    margin-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .submit-btn,
+  .cancel-form-btn {
+    width: 50%;
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-form-header {
+    padding: 10px 12px;
+  }
+  
+  .product-form-header h1 {
+    font-size: 15px;
+  }
+  
+  .cancel-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .product-form {
+    padding: 12px;
+  }
+  
+  .form-actions {
+    padding: 12px;
+  }
+  
+  .submit-btn,
+  .cancel-form-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+/* Тёмная тема для sticky элементов */
+[data-theme="dark"] .product-form-header {
+  background: #1e1e2e;
+  border-bottom: 1px solid #2d3748;
+}
+
+[data-theme="dark"] .form-actions {
+  background: #1e1e2e;
+  border-top: 1px solid #2d3748;
 }
 
 ######### File: src\components\ProductForm.jsx #########
@@ -6327,19 +6525,7 @@ import './QRCodeGenerator.css';
 const QRCodeGenerator = ({ product, shareToken, onClose, isGenerating }) => {
   const [qrSize] = useState(256);
   
-  // Сохраняем токен в localStorage для демо-режима
-  React.useEffect(() => {
-    if (shareToken && product) {
-      const allTokens = JSON.parse(localStorage.getItem('share_tokens') || '{}');
-      allTokens[shareToken] = product;
-      localStorage.setItem('share_tokens', JSON.stringify(allTokens));
-    }
-  }, [shareToken, product]);
-  
-  // Ссылка на гостевую страницу
   const guestUrl = `${window.location.origin}/shared-product/${shareToken}`;
-  
-  // URL для генерации QR-кода через API
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(guestUrl)}`;
   
   const downloadQR = () => {
@@ -6504,7 +6690,7 @@ const QRCodeGenerator = ({ product, shareToken, onClose, isGenerating }) => {
         </div>
         
         <div className="qr-note">
-          <small>ℹ️ Ссылка действительна постоянно. Вы можете отозвать доступ в любой момент в настройках продукта.</small>
+          <small>ℹ️ Ссылка действительна постоянно. При удалении продукта доступ по ссылке будет прекращён.</small>
         </div>
       </div>
     </div>
@@ -6517,7 +6703,7 @@ export default QRCodeGenerator;
 import React, { useState } from 'react';
 import './Auth.css';
 
-const Register = ({ onSwitchToLogin, onRegister, error }) => {
+const Register = ({ onSwitchToLogin, onRegister, error, clearError }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -6531,6 +6717,7 @@ const Register = ({ onSwitchToLogin, onRegister, error }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -6538,6 +6725,8 @@ const Register = ({ onSwitchToLogin, onRegister, error }) => {
       [e.target.name]: e.target.value
     });
     if (validationError) setValidationError('');
+    if (localError) setLocalError('');
+    if (clearError) clearError();
   };
 
   const togglePasswordVisibility = () => {
@@ -6576,14 +6765,19 @@ const Register = ({ onSwitchToLogin, onRegister, error }) => {
     }
 
     setLoading(true);
+    setValidationError('');
+    setLocalError('');
     
     try {
       await onRegister(formData);
-    } catch (error) {
+    } catch (err) {
+      setLocalError(err.message || 'Ошибка регистрации');
     } finally {
       setLoading(false);
     }
   };
+
+  const displayError = error || validationError || localError;
 
   const EyeIcon = ({ isVisible }) => (
     <svg 
@@ -6613,9 +6807,9 @@ const Register = ({ onSwitchToLogin, onRegister, error }) => {
         <div className="auth-content">
           <h2>Регистрация в DigitalPassport</h2>
           
-          {(error || validationError) && (
+          {displayError && (
             <div className="form-error">
-              {error || validationError}
+              {displayError}
             </div>
           )}
           
@@ -6998,16 +7192,235 @@ export default Register;
   display: none;
 }
 
+/* Добавьте в конец файла Settings.css */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 450px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2d3748;
+}
+
+.modal-close {
+  background: #ff4757;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.modal-content .form-group {
+  margin-bottom: 16px;
+}
+
+.modal-content .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.modal-content .form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.modal-content .form-group small {
+  display: block;
+  margin-top: 4px;
+  color: #718096;
+  font-size: 12px;
+}
+
+.warning-text {
+  background: #fef3c7;
+  padding: 12px;
+  border-radius: 8px;
+  color: #92400e;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modal-buttons button:first-child {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.modal-buttons button:last-child {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.modal-buttons button.delete-btn {
+  background: #ff4757;
+}
+
+.modal-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: #ff4757;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+[data-theme="dark"] .modal-content {
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] .modal-header h3 {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom-color: #2d3748;
+}
+
+[data-theme="dark"] .modal-content .form-group label {
+  color: #a0aec0;
+}
+
+[data-theme="dark"] .modal-content .form-group input {
+  background: #2d3748;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .warning-text {
+  background: #2d3748;
+  color: #a0aec0;
+}
+
 ######### File: src\components\Settings.jsx #########
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../hooks/useAuth';
 import './Settings.css';
 
 const Settings = ({ onBack }) => {
   const { theme, changeTheme, THEMES } = useTheme();
+  const { changePassword, deleteAccount } = useAuth();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleThemeChange = (newTheme) => {
     changeTheme(newTheme);
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setError('Новые пароли не совпадают');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError('Пароль должен содержать минимум 8 символов');
+      return;
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      setError('Пароль должен содержать хотя бы одну заглавную букву');
+      return;
+    }
+    if (!/\d/.test(newPassword)) {
+      setError('Пароль должен содержать хотя бы одну цифру');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      await changePassword(oldPassword, newPassword);
+      setShowPasswordModal(false);
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      alert('Пароль успешно изменён');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    if (!window.confirm('ВНИМАНИЕ! Это действие необратимо. Все ваши данные будут удалены. Вы уверены?')) {
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    try {
+      await deleteAccount(deletePassword);
+      setShowDeleteModal(false);
+      alert('Аккаунт успешно удалён');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -7042,15 +7455,109 @@ const Settings = ({ onBack }) => {
         <div className="settings-section">
           <h3>🔐 Аккаунт</h3>
           <div className="settings-option">
-            <button className="settings-action-btn disabled" disabled>
+            <button 
+              className="settings-action-btn" 
+              onClick={() => setShowPasswordModal(true)}
+            >
               🔐 Сменить пароль
             </button>
-            <button className="settings-action-btn delete-btn disabled" disabled>
+            <button 
+              className="settings-action-btn delete-btn" 
+              onClick={() => setShowDeleteModal(true)}
+            >
               🗑️ Удалить аккаунт
             </button>
           </div>
         </div>
       </div>
+
+      {showPasswordModal && (
+        <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Смена пароля</h3>
+              <button className="modal-close" onClick={() => setShowPasswordModal(false)}>✕</button>
+            </div>
+            <form onSubmit={handleChangePassword}>
+              <div className="form-group">
+                <label>Текущий пароль</label>
+                <input
+                  type="password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <div className="form-group">
+                <label>Новый пароль</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+                <small>Минимум 8 символов, заглавная буква и цифра</small>
+              </div>
+              <div className="form-group">
+                <label>Подтвердите новый пароль</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+              {error && <div className="error-message">{error}</div>}
+              <div className="modal-buttons">
+                <button type="button" onClick={() => setShowPasswordModal(false)} disabled={loading}>
+                  Отмена
+                </button>
+                <button type="submit" disabled={loading}>
+                  {loading ? 'Сохранение...' : 'Сменить пароль'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Удаление аккаунта</h3>
+              <button className="modal-close" onClick={() => setShowDeleteModal(false)}>✕</button>
+            </div>
+            <form onSubmit={handleDeleteAccount}>
+              <div className="warning-text">
+                ⚠️ ВНИМАНИЕ! Это действие необратимо. Все ваши данные будут удалены.
+              </div>
+              <div className="form-group">
+                <label>Введите пароль для подтверждения</label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+              {error && <div className="error-message">{error}</div>}
+              <div className="modal-buttons">
+                <button type="button" onClick={() => setShowDeleteModal(false)} disabled={loading}>
+                  Отмена
+                </button>
+                <button type="submit" className="delete-btn" disabled={loading}>
+                  {loading ? 'Удаление...' : 'Удалить аккаунт'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -7335,37 +7842,46 @@ export default Settings;
 
 ######### File: src\components\SharedProductPage.jsx #########
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import LoadingSpinner from './LoadingSpinner';
+import { useProducts } from '../hooks/useProducts';
 import './SharedProductPage.css';
 
 const SharedProductPage = () => {
+  const { token } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+  const [error, setError] = useState(null);
+  const { getProductByShareToken } = useProducts();
+
   useEffect(() => {
-    // Просто показываем демо-данные
-    setTimeout(() => {
-      setProduct({
-        id: 999,
-        name: "Демо продукт",
-        manufacturer: "Apple",
-        model: "MacBook Pro",
-        serial_number: "SN-DEMO-123",
-        price: 150000,
-        purchase_date: "2024-01-15",
-        warranty_until: "2026-01-15",
-        description: "Это демонстрационный продукт. В реальном приложении здесь будут данные из базы данных.",
-        category: "Ноутбук"
-      });
+    loadProduct();
+  }, [token]);
+
+  const loadProduct = async () => {
+    setLoading(true);
+    try {
+      const data = await getProductByShareToken(token);
+      setProduct(data);
+      setError(null);
+    } catch (error) {
+      console.error('Error loading shared product:', error);
+      setError('Продукт не найден или ссылка недействительна');
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
-  
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'Не указано';
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU');
+    return date.toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
-  
+
   const getCategoryIcon = (category) => {
     const icons = {
       'Ноутбук': '💻',
@@ -7379,17 +7895,40 @@ const SharedProductPage = () => {
     };
     return icons[category] || '📦';
   };
-  
+
   if (loading) {
+    return <LoadingSpinner message="Загрузка информации о продукте..." />;
+  }
+
+  if (error) {
     return (
-      <div className="shared-product-page">
-        <div className="shared-product-container" style={{ textAlign: 'center', padding: '50px' }}>
-          Загрузка...
+      <div className="shared-product-error">
+        <div className="error-container">
+          <div className="error-icon">🔒</div>
+          <h2>Доступ ограничен</h2>
+          <p>{error}</p>
+          <button onClick={() => window.location.href = '/'}>
+            Вернуться на главную
+          </button>
         </div>
       </div>
     );
   }
-  
+
+  if (!product) {
+    return (
+      <div className="shared-product-error">
+        <div className="error-container">
+          <div className="error-icon">❓</div>
+          <h2>Продукт не найден</h2>
+          <button onClick={() => window.location.href = '/'}>
+            Вернуться на главную
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="shared-product-page">
       <div className="shared-product-container">
@@ -7640,13 +8179,42 @@ export const useAuth = () => {
     }
   };
 
+  const changePassword = async (oldPassword, newPassword) => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const result = await AuthAPI.changePassword(oldPassword, newPassword);
+      return result;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteAccount = async (password) => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const result = await AuthAPI.deleteAccount(password);
+      await logout();
+      return result;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setIsAuthenticated(false);
     setUser(null);
     setError(null);
-    // Очищаем сохранённый маршрут
-    sessionStorage.removeItem('lastRoute');
-    localStorage.removeItem('lastRoute');
+    localStorage.removeItem('lastView');
     document.cookie = 'my_access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   };
 
@@ -7663,6 +8231,8 @@ export const useAuth = () => {
     register,
     updateUser,
     uploadAvatar,
+    changePassword,
+    deleteAccount,
     logout,
     checkAuth,
     clearError
@@ -7886,20 +8456,8 @@ export const useProducts = () => {
 
   const generateShareToken = async (productId) => {
     try {
-      // Пытаемся получить токен с бэкенда
-      // Когда бэкенд будет готов, раскомментировать:
-      // const response = await ProductAPI.generateShareToken(productId);
-      // return response;
-      
-      // Временное решение для демонстрации (удалить когда бэкенд будет готов)
-      console.log('Generating share token for product:', productId);
-      const existingToken = localStorage.getItem(`share_token_${productId}`);
-      if (existingToken) {
-        return { share_token: existingToken };
-      }
-      const tempToken = btoa(`product_${productId}_${Date.now()}_${Math.random()}`);
-      localStorage.setItem(`share_token_${productId}`, tempToken);
-      return { share_token: tempToken };
+      const response = await ProductAPI.generateShareToken(productId);
+      return response;
     } catch (error) {
       console.error('Error generating share token:', error);
       throw error;
@@ -7908,15 +8466,8 @@ export const useProducts = () => {
 
   const getProductByShareToken = async (token) => {
     try {
-      // Когда бэкенд будет готов, раскомментировать:
-      // const response = await ProductAPI.getProductByShareToken(token);
-      // return response;
-      
-      // Временное решение для демонстрации
-      console.log('Getting product by share token:', token);
-      const productId = parseInt(atob(token).split('_')[1]);
-      const product = products.find(p => p.id === productId);
-      return product || null;
+      const response = await ProductAPI.getProductByShareToken(token);
+      return response;
     } catch (error) {
       console.error('Error getting product by token:', error);
       throw error;
@@ -8076,17 +8627,46 @@ export const useTheme = () => {
   font-size: 14px;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+* {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-@media (max-width: 360px) {
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Адаптивные настройки */
+@media (max-width: 768px) {
   :root {
-    font-size: 12px;
+    font-size: 14px;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    font-size: 13px;
   }
 }
 
@@ -8096,16 +8676,7 @@ body {
   }
 }
 
-* {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-body {
-  overflow-x: hidden;
-  width: 100%;
-}
-
+/* Стили для скролла */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -8300,17 +8871,6 @@ body {
 [data-theme="dark"] .products-controls {
   background: var(--card-bg-solid);
   border: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .view-btn {
-  background: var(--input-bg);
-  border-color: var(--input-border);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .view-btn.active {
-  background: #667eea;
-  color: white;
 }
 
 [data-theme="dark"] .add-product-btn {
@@ -8602,7 +9162,7 @@ body {
   background: rgba(102, 126, 234, 0.2);
 }
 
-/* Добавьте в конец файла */
+/* QR и модальные окна */
 .qr-generating {
   text-align: center;
   padding: 40px;
@@ -8621,6 +9181,35 @@ body {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Исправления для мобильных устройств */
+@media (max-width: 768px) {
+  .dashboard-header,
+  .profile-header,
+  .products-page-header,
+  .settings-header,
+  .product-detail-header {
+    padding: 10px 15px;
+  }
+  
+  .dashboard-content,
+  .profile-content,
+  .products-page-content,
+  .settings-content,
+  .product-detail-content {
+    padding: 15px;
+  }
+  
+  .product-detail {
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .product-detail-content {
+    padding-bottom: 30px;
+  }
 }
 
 ######### File: src\main.jsx #########
@@ -8701,7 +9290,7 @@ class AuthAPI {
     try {
       const response = await api.get('/users/me');
       console.log('📥 User data from server:', response.data);
-      return response.data; // Бэкенд уже возвращает avatar_url!
+      return response.data;
     } catch (error) {
       console.log('⚠️ /users/me failed, trying /users/');
       const response = await api.get('/users/');
@@ -8730,7 +9319,6 @@ class AuthAPI {
     }
   }
 
-  // Загрузка аватарки через API (новый эндпоинт)
   async uploadAvatar(file) {
     try {
       console.log('📤 Uploading avatar:', file.name);
@@ -8752,6 +9340,29 @@ class AuthAPI {
     }
   }
 
+  async changePassword(oldPassword, newPassword) {
+    try {
+      const response = await api.put('/users/me/password', {
+        old_password: oldPassword,
+        new_password: newPassword
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async deleteAccount(password) {
+    try {
+      const response = await api.delete('/users/me', {
+        data: { password: password }
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   handleError(error) {
     if (error.response?.data?.detail) {
       return new Error(error.response.data.detail);
@@ -8763,10 +9374,7 @@ class AuthAPI {
       return new Error('Пользователь уже существует');
     }
     if (error.response?.status === 400) {
-      return new Error(error.response.data.detail || 'Ошибка загрузки файла');
-    }
-    if (error.response?.status === 413) {
-      return new Error('Файл слишком большой (макс. 5MB)');
+      return new Error(error.response.data.detail || 'Ошибка');
     }
     if (error.request) {
       return new Error('Нет подключения к серверу');
@@ -8860,6 +9468,24 @@ class ProductAPI {
     }
   }
 
+  async generateShareToken(productId) {
+    try {
+      const response = await api.post(`/products/${productId}/share-token`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getProductByShareToken(token) {
+    try {
+      const response = await api.get(`/products/shared/${token}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   handleError(error) {
     if (error.response?.data?.detail) {
       return new Error(error.response.data.detail);
@@ -8881,7 +9507,6 @@ class ProductAPI {
 }
 
 export default new ProductAPI();
-
 
 ######### File: src\services\productImageAPI.js #########
 import axios from 'axios';

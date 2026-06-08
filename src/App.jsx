@@ -40,7 +40,6 @@ function App() {
     if (!authLoading && isAuthenticated && !hasCheckedRef.current) {
       hasCheckedRef.current = true;
       const savedView = localStorage.getItem('lastView');
-      // Перенаправляем на дашборд, если нет сохранённого маршрута
       if (savedView && savedView !== 'login' && savedView !== 'register') {
         navigate(savedView);
       } else {
@@ -53,7 +52,6 @@ function App() {
     setTransitionLoading(true);
     try {
       await login(credentials);
-      // После успешного входа перенаправляем на дашборд
       navigate('dashboard');
     } catch (error) {
       console.error('Login error:', error);
@@ -163,18 +161,6 @@ function App() {
       
       {currentView === 'settings' && (
         <Settings onBack={() => navigate('dashboard')} />
-      )}
-      
-      {currentView === 'history' && (
-        <div className="history-placeholder">
-          <header className="history-header">
-            <button onClick={() => navigate('dashboard')} className="back-button">← Назад</button>
-            <h1>История</h1>
-          </header>
-          <div className="history-content">
-            <p>Раздел в разработке</p>
-          </div>
-        </div>
       )}
     </div>
   );

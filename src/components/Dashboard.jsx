@@ -88,18 +88,10 @@ const Dashboard = ({ user, onLogout, onNavigate }) => {
         
         <div 
           className="dashboard-card clickable-card"
-          onClick={() => onNavigate('history')}
-        >
-          <h3>📈 История</h3>
-          <p>История действий</p>
-        </div>
-        
-        <div 
-          className="dashboard-card clickable-card"
           onClick={() => onNavigate('settings')}
         >
           <h3>🛠️ Настройки</h3>
-          <p>Внешний вид</p>
+          <p>Внешний вид и безопасность</p>
         </div>
         
       </main>
